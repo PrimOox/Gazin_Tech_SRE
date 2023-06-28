@@ -44,6 +44,12 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
+    - name: Configure AWS Credentials
+      run: |
+        mkdir -p ~/.aws
+        echo -e "[gazin]\naws_access_key_id = ${{ secrets.AWS_ACCESS_KEY_ID }}\naws_secret_access_key = ${{ secrets.AWS_SECRET_ACCESS_KEY }}\nregion=us-east-2" > ~/.aws/credentials
+        aws configure set region us-east-2 --profile gazin
+
     - name: Install and configure kubectl
       run: |
         curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
