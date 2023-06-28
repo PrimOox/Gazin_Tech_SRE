@@ -1,0 +1,78 @@
+name: 'CI/CD Pipeline'
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+
+jobs:
+  terraform:
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./Terraform
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.x
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: terraform apply --auto-approve
+
+  deploy:
+    name: Deploy
+    needs: terraform
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Install and configure AWS CLI
+      run: |
+        curl "https://d1vvhvl2y92vvt.cloudfront.net/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+        unzip awscliv2.zip
+        sudo ./aws/install
+        aws configure set region us-east-2 --profile gazin
+
+    - name: Install and configure kubectl
+      run: |
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        chmod +x kubectl
+        sudo mv kubectl /usr/local/bin/
+
+    - name: Update kubeconfig
+      run: aws eks --region us-east-2 update-kubeconfig --name k8s-cluster --profile gazin --kubeconfig kubeconfig.yaml
+
+    - name: Apply AWS auth configmap
+      run: kubectl apply -f ../k8s/aws-auth-configmap.yaml --kubeconfig=kubeconfig.yaml
+
+    - name: Install Helm
+      run: |
+        curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
+        sudo apt-get install apt-transport-https --yes
+        echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+        sudo apt-get update
+        sudo apt-get install helm
+
+    - name: Add Bitnami Helm repo and update
+      run: |
+        helm repo add bitnami https://charts.bitnami.com/bitnami
+        helm repo update
+
+    - name: Deploy with Helm
+      run: helm install my-web-app bitnami/nginx --kubeconfig=kubeconfig.yaml
+
+    - name: Apply HPA configuration
+      run: kubectl apply -f ../k8s/nginx-hpa.yaml --kubeconfig=kubeconfig.yaml
