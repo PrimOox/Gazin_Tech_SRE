@@ -77,8 +77,14 @@ jobs:
         helm repo add bitnami https://charts.bitnami.com/bitnami
         helm repo update
 
-    - name: Deploy with Helm
-      run: helm install my-web-app bitnami/nginx --kubeconfig=kubeconfig.yaml
+    - name: Install/Upgrade with Helm Application
+      run: |
+        if helm list -f my-web-app --kubeconfig=kubeconfig.yaml; then
+          helm upgrade my-web-app bitnami/nginx --kubeconfig=kubeconfig.yaml
+        else
+          helm install my-web-app bitnami/nginx --kubeconfig=kubeconfig.yaml
+        fi
+      
 
     - name: Apply HPA configuration
       run: kubectl apply -f k8s/nginx-hpa.yaml --kubeconfig=kubeconfig.yaml
