@@ -60,7 +60,9 @@ jobs:
       run: aws eks --region us-east-2 update-kubeconfig --name k8s-cluster --profile gazin --kubeconfig kubeconfig.yaml
 
     - name: Apply AWS auth configmap
-      run: kubectl apply -f ../k8s/aws-auth-configmap.yaml --kubeconfig=kubeconfig.yaml
+      run: |
+        pwd
+        kubectl apply -f k8s/aws-auth-configmap.yaml --kubeconfig=kubeconfig.yaml
 
     - name: Install Helm
       run: |
