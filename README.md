@@ -74,11 +74,12 @@ Este projeto demonstra como configurar e implantar uma aplicação simples em um
     helm list --kubeconfig=kubeconfig.yaml
     kubectl get svc --kubeconfig=kubeconfig.yaml
     kubectl get pods --kubeconfig=kubeconfig.yaml
+    kubectl get hpa --kubeconfig=kubeconfig.yaml
     ```
 
 8. **Testar a Aplicação**
 
-    Faça uma requisição HTTP para o endereço IP externo do serviço para testar a aplicação.
+    Faça uma requisição HTTP para o endereço IP externo do serviço para testar a aplicação, ou acesse através do browser (pode levar alguns minutos para ficar disponível).
 
     ```bash
     curl http://<external-ip>
@@ -97,7 +98,8 @@ Este projeto demonstra como configurar e implantar uma aplicação simples em um
 
 ## Problemas Conhecidos
 
-- HPA não está conseguindo acessar as métricas de CPU em utilização. Você pode tentar instalar o servidor de métricas manualmente para tentar solucionar este problema:
+- Se o pod não estiver subindo, tenta configurar o ConfigMap novamente (etapa 3).
+- O HPA não está conseguindo acessar as métricas de CPU em utilização. Nesse caso você pode tentar instalar o servidor de métricas manualmente para tentar solucionar este problema:
 
     ```bash
     helm repo update

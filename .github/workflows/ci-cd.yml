@@ -84,7 +84,6 @@ jobs:
         else
           helm install my-web-app bitnami/nginx --kubeconfig=kubeconfig.yaml
         fi
-      
 
     - name: Apply HPA configuration
       run: kubectl apply -f k8s/nginx-hpa.yaml --kubeconfig=kubeconfig.yaml

@@ -62,3 +62,5 @@ terraform.rc
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/terraform,visualstudiocode,helm
+_area51/*
+kubeconfig.yaml

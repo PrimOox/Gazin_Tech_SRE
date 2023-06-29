@@ -31,8 +31,9 @@ module "eks_cluster" {
 
   # Self Managed Node Group(s)
   self_managed_node_group_defaults = {
-    instance_type                          = "t2.medium"
+    instance_type                          = "t2.micro"
     update_launch_template_default_version = true
+    iam_role_arn = aws_iam_role.eks.arn
     iam_role_additional_policies = {
       AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
     }
@@ -58,6 +59,7 @@ module "eks_cluster" {
   tags = {
     Environment = "dev"
     Terraform   = "true"
+    Module      = "EKS"
   }
 
 }
