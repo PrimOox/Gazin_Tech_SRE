@@ -80,7 +80,7 @@ jobs:
     - name: Install/Upgrade with Helm Application
       run: |
         if helm list -f my-web-app --kubeconfig=kubeconfig.yaml; then
-          helm upgrade my-web-app bitnami/nginx --kubeconfig=kubeconfig.yaml
+          helm upgrade --install my-web-app bitnami/nginx --kubeconfig=kubeconfig.yaml
         else
           helm install my-web-app bitnami/nginx --kubeconfig=kubeconfig.yaml
         fi
