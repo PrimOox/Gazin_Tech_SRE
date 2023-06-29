@@ -21,7 +21,7 @@ resource "aws_iam_role" "eks" {
     "Version" = "2012-10-17",
     "Statement" = [
       {
-        "Sid" = "EKSNodeAssumeRole",
+        "Sid"    = "EKSNodeAssumeRole",
         "Effect" = "Allow",
         "Principal" = {
           "Service" = "ec2.amazonaws.com"

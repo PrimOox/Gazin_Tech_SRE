@@ -26,8 +26,3 @@ variable "subnet_ids" {
   type        = list(string)
   description = "IDs das sub-redes na VPC"
 }
-
-variable "node_group_role_arn" {
-  type        = string
-  description = "Self managed node group IAM role ARN"
-}
