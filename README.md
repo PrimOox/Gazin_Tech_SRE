@@ -1,6 +1,6 @@
 # Projeto Teste - Gazin SRE
 
-Este projeto demonstra como configurar e implantar uma aplicação simples em um cluster Kubernetes na AWS (EKS) usando Terraform e Helm.
+Este projeto demonstra como configurar e implementar uma aplicação simples em um cluster Kubernetes na AWS (EKS) usando Terraform e Helm.
 
 ## Pré-requisitos
 
@@ -32,13 +32,13 @@ Este projeto demonstra como configurar e implantar uma aplicação simples em um
 
 3. **Configurar o ConfigMap "aws-auth"**
 
-    Se as instâncias EC2 não estiverem sendo autorizadas de forma automática para se juntar ao cluster, você pode precisar configurar o ConfigMap "aws-auth".
+    Se as instâncias EC2 não estiverem sendo autorizadas de forma automática para se juntar ao cluster, você precisas configurar o ConfigMap "aws-auth" manualmente.
 
     ```bash
     kubectl apply -f k8s/aws-auth-configmap.yaml --kubeconfig=kubeconfig.yaml
     ```
 
-4. **Instalar o repositório do Helm que contém os charts que iremos utilizar**
+4. **Instalar o repositório do Helm que contém o chart do NGINX que iremos utilizar**
 
     ```bash
     helm repo add bitnami https://charts.bitnami.com/bitnami
@@ -50,17 +50,22 @@ Este projeto demonstra como configurar e implantar uma aplicação simples em um
     helm repo update
     ```
 
-5. **Implantar a Aplicação**
+5. **implementar a Aplicação**
 
-    Implantar a aplicação nginx usando o Helm chart.
+    implementar a aplicação NGINX usando o Helm chart.
 
     ```bash
     helm install my-web-app bitnami/nginx --kubeconfig=kubeconfig.yaml
     ```
+    _(Opcional) Implementar o serviço já com HPA configurado:_
+
+    ```bash
+    helm install my-web-app bitnami/nginx --set autoscaling.enabled=true --set autoscaling.minReplicas=2 --set autoscaling.maxReplicas=5 --set autoscaling.targetCPU=50 --set autoscaling.targetMemory=80 --kubeconfig=kubeconfig.yaml
+    ```
 
 6. **Configurar o Horizontal Pod Autoscaler (HPA)**
 
-    Configure o HPA para a aplicação.
+    Configure o HPA para a aplicação caso não tenha feito no passo anterior.
 
     ```bash
     kubectl apply -f k8s/nginx-hpa.yaml --kubeconfig=kubeconfig.yaml
@@ -72,6 +77,8 @@ Este projeto demonstra como configurar e implantar uma aplicação simples em um
 
     ```bash
     helm list --kubeconfig=kubeconfig.yaml
+    kubectl get nodes --kubeconfig=kubeconfig.yaml
+    kubectl get configmap --kubeconfig=kubeconfig.yaml
     kubectl get svc --kubeconfig=kubeconfig.yaml
     kubectl get pods --kubeconfig=kubeconfig.yaml
     kubectl get hpa --kubeconfig=kubeconfig.yaml

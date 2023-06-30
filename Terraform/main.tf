@@ -33,7 +33,6 @@ module "eks_cluster" {
   self_managed_node_group_defaults = {
     instance_type                          = "t2.micro"
     update_launch_template_default_version = true
-    iam_role_arn                           = aws_iam_role.eks.arn
     iam_role_additional_policies = {
       AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
     }
@@ -42,13 +41,13 @@ module "eks_cluster" {
   self_managed_node_groups = {
     one = {
       name         = "mixed-1"
-      max_size     = 4
+      max_size     = 10
       desired_size = 2
 
       use_mixed_instances_policy = true
       mixed_instances_policy = {
         instances_distribution = {
-          on_demand_base_capacity                  = 0
+          on_demand_base_capacity                  = 2
           on_demand_percentage_above_base_capacity = 10
           spot_allocation_strategy                 = "capacity-optimized"
         }
