@@ -1,3 +1,4 @@
+[![CI/CD Pipeline](https://github.com/PrimOox/Gazin_Tech_SRE/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/PrimOox/Gazin_Tech_SRE/actions/workflows/ci-cd.yml)
 # Projeto Teste - Gazin SRE
 
 Este projeto demonstra como configurar e implementar uma aplicação simples em um cluster Kubernetes na AWS (EKS) usando Terraform e Helm.
@@ -50,28 +51,15 @@ Este projeto demonstra como configurar e implementar uma aplicação simples em 
     helm repo update
     ```
 
-5. **implementar a Aplicação**
+5. **implementar a Aplicação NGINX com uma estratégia de HPA**
 
-    implementar a aplicação NGINX usando o Helm chart.
-
-    ```bash
-    helm install my-web-app bitnami/nginx --kubeconfig=kubeconfig.yaml
-    ```
-    _(Opcional) Implementar o serviço já com HPA configurado:_
+    implementar a aplicação NGINX já com HPA configurado usando o Helm chart.
 
     ```bash
-    helm install my-web-app bitnami/nginx --set autoscaling.enabled=true --set autoscaling.minReplicas=2 --set autoscaling.maxReplicas=5 --set autoscaling.targetCPU=50 --set autoscaling.targetMemory=80 --kubeconfig=kubeconfig.yaml
+    helm upgrade --install my-web-app bitnami/nginx --set autoscaling.enabled=true --set autoscaling.minReplicas=2 --set autoscaling.maxReplicas=5 --set autoscaling.targetCPU=50 --set autoscaling.targetMemory=80 --set resources.requests.cpu=100m --set resources.requests.memory=128Mi --set resources.limits.cpu=200m --set resources.limits.memory=256Mi --kubeconfig=kubeconfig.yaml
     ```
 
-6. **Configurar o Horizontal Pod Autoscaler (HPA)**
-
-    Configure o HPA para a aplicação caso não tenha feito no passo anterior.
-
-    ```bash
-    kubectl apply -f k8s/nginx-hpa.yaml --kubeconfig=kubeconfig.yaml
-    ```
-
-7. **Verificar a Implantação**
+6. **Verificar a Implantação**
 
     Verifique se a implantação foi bem-sucedida verificando os recursos do Helm, os serviços e os pods.
 
@@ -84,7 +72,7 @@ Este projeto demonstra como configurar e implementar uma aplicação simples em 
     kubectl get hpa --kubeconfig=kubeconfig.yaml
     ```
 
-8. **Testar a Aplicação**
+7. **Testar a Aplicação**
 
     Faça uma requisição HTTP para o endereço IP externo do serviço para testar a aplicação, ou acesse através do browser (pode levar alguns minutos para ficar disponível).
 
@@ -94,7 +82,7 @@ Este projeto demonstra como configurar e implementar uma aplicação simples em 
 
     Substitua `<external-ip>` pelo endereço IP externo do seu serviço.
 
-9. **Limpeza**
+8. **Limpeza**
 
     Após terminar de testar a aplicação, você pode limpar os recursos criados com os seguintes comandos:
 
@@ -106,12 +94,18 @@ Este projeto demonstra como configurar e implementar uma aplicação simples em 
 ## Problemas Conhecidos
 
 - Se o pod não estiver subindo, tenta configurar o ConfigMap novamente (etapa 3).
-- O HPA não está conseguindo acessar as métricas de CPU em utilização. Nesse caso você pode tentar instalar o servidor de métricas manualmente para tentar solucionar este problema:
+- Se o HPA não estiver conseguindo acessar as métricas de utilização de CPU e memória será necessário instalar o servidor de métricas manualmente com um chart do Helm:
 
     ```bash
     helm repo update
-    helm install metrics-server bitnami/metrics-server --namespace kube-system --kubeconfig=kubeconfig.yaml
-    helm upgrade --namespace kube-system metrics-server oci://registry-1.docker.io/bitnamicharts/metrics-server --set apiService.create=true --kubeconfig=kubeconfig.yaml
+    helm upgrade --install metrics-server bitnami/metrics-server --namespace kube-system --kubeconfig=kubeconfig.yaml
+    helm upgrade --install --namespace kube-system metrics-server oci://registry-1.docker.io/bitnamicharts/metrics-server --set apiService.create=true --kubeconfig=kubeconfig.yaml
+
     # Lista as métricas
     kubectl get --raw "/apis/metrics.k8s.io/v1beta1/nodes" --kubeconfig=kubeconfig.yaml
+    kubectl get --raw "/apis/metrics.k8s.io/v1beta1/pods" --kubeconfig=kubeconfig.yaml
+    # PowerShell
+    kubectl get pods --all-namespaces --kubeconfig=kubeconfig.yaml | findstr metrics-server
+    #Bash
+    kubectl get pods --all-namespaces --kubeconfig=kubeconfig.yaml | grep metrics-server
     ```

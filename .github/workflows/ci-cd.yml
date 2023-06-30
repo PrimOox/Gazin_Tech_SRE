@@ -77,9 +77,16 @@ jobs:
         helm repo add bitnami https://charts.bitnami.com/bitnami
         helm repo update
 
-    - name: Install/Upgrade with Helm Application
+    - name: Install/Upgrade NGINX and HPA with Helm Application
       run: |
-        helm upgrade --install my-web-app bitnami/nginx --kubeconfig=kubeconfig.yaml
-
-    - name: Apply HPA configuration
-      run: kubectl apply -f k8s/nginx-hpa.yaml --kubeconfig=kubeconfig.yaml
+        helm upgrade --install my-web-app bitnami/nginx \
+        --set autoscaling.enabled=true \
+        --set autoscaling.minReplicas=2 \
+        --set autoscaling.maxReplicas=5 \
+        --set autoscaling.targetCPU=50 \
+        --set autoscaling.targetMemory=80 \
+        --set resources.requests.cpu=100m \
+        --set resources.requests.memory=128Mi \
+        --set resources.limits.cpu=200m \
+        --set resources.limits.memory=256Mi \
+        --kubeconfig=kubeconfig.yaml        
